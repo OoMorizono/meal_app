@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Http\Requests\PostRequest;
+use App\Models\Post;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+
 
 class PostController extends Controller
 {
@@ -14,7 +20,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        return view('posts.index');
     }
 
     /**
@@ -24,18 +30,47 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        $categories = Category::all();
+        return view('posts.create', compact('categories'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\PostRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
-        //
+        $post = new Post($request->all());
+        $post->user_id = $request->user()->id;
+
+        $file = $request->file('image');
+        $post->image = self::createFileName($file);
+
+        // トランザクション開始
+        DB::beginTransaction();
+        try {
+            // 登録
+            $post->save();
+
+            // 画像アップロード
+            if (!Storage::putFileAs('images/posts', $file, $post->image)) {
+                // 例外を投げてロールバックさせる
+                throw new \Exception('画像ファイルの保存に失敗しました。');
+            }
+
+            // トランザクション終了(成功)
+            DB::commit();
+        } catch (\Exception $e) {
+            // トランザクション終了(失敗)
+            DB::rollback();
+            return back()->withInput()->withErrors($e->getMessage());
+        }
+
+        return redirect()
+            ->route('posts.show', $post)
+            ->with('notice', '記事を登録しました');
     }
 
     /**
@@ -46,7 +81,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        //
+        return view('posts.show', compact('post'));
     }
 
     /**
@@ -63,11 +98,11 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\PostRequest  $request
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(PostRequest $request, $id)
     {
         //
     }
@@ -81,5 +116,10 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         //
+    }
+
+    public static function createFileName($file)
+    {
+        return date('YmdHis') . '_' . $file->getClientOriginalName();
     }
 }
