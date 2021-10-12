@@ -10,8 +10,8 @@
                 {{ $post->title }}</h2>
             <h3>{{ $post->user->name }}</h3>
             <p class="text-sm mb-2 md:text-base font-normal text-gray-600">
-                記事作成日:
-                {{ $post->date_diff }}
+                <span class="text-red-400">{{ $post->date_diff }}</span>
+                に投稿
             </p>
             <p class="text-sm mb-2 md:text-base font-normal text-gray-600">
                 記事作成日:

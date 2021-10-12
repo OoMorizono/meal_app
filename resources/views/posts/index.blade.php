@@ -7,9 +7,9 @@
                     <h2 class="font-bold font-sans break-normal text-gray-900 pt-6 pb-1 text-3xl md:text-4xl">
                         {{ $post->title }}</h2>
                     <h3>{{ $post->user->name }}</h3>
-                    <p class="text-sm mb-2 md:text-base font-normal text-red-400">
-                        <span class="text-gray-600">経過時間:</span>
-                        {{ $post->date_diff }}
+                    <p class="text-sm mb-2 md:text-base font-normal text-gray-600">
+                        <span class="text-red-400">{{ $post->date_diff }}</span>
+                        に投稿
                     </p>
                     <p class=" text-gray-600 text-sm mb-2 md:text-base font-normal text-gray-600">
                         記事作成日:

@@ -2,8 +2,22 @@
 
 namespace Database\Factories;
 
+// use App\Models\Post;
+// use Illuminate\Database\Eloquent\Factories\Factory;
+// use Illuminate\Support\Arr;
+// use Illuminate\Support\Facades\File;
+// use App\Models\User;
+// use App\Models\Category;
+// use Illuminate\Support\Facades\Storage;
+
+use App\Models\Category;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+
 
 class PostFactory extends Factory
 {
@@ -21,8 +35,18 @@ class PostFactory extends Factory
      */
     public function definition()
     {
+        $file = $this->faker->image();
+        $fileName = basename($file);
+
+        Storage::putFileAs('public/images/posts', $file, $fileName);
+        File::delete($file);
+
         return [
-            //
+            'image' => $fileName,
+            'user_id' => Arr::random(Arr::pluck(User::all(), 'id')),
+            'title' => $this->faker->word(),
+            'category_id' => Arr::random(Arr::pluck(Category::all(), 'id')),
+            'body' => $this->faker->paragraph(),
         ];
     }
 }
