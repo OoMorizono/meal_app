@@ -21,8 +21,8 @@ class CreatePostsTable extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table->integer('category_id');
-            $table->text('image');
             $table->text('body');
+            $table->text('image');
             $table->timestamps();
         });
     }

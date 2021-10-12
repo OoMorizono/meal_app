@@ -6,6 +6,7 @@ use Illuminate\Contracts\Cache\Store;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class Post extends Model
 {
@@ -23,8 +24,25 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getImageUrlAttribute()
+    public function likes()
     {
-        return Storage::url('images/posts/' . $this->image);
+        return $this->hasMany(Like::class);
     }
+
+    public function GetImagePathAttribute()
+    {
+        return 'public/images/posts/' . $this->image;
+    }
+
+    public function GetImageUrlAttribute()
+    {
+        return Storage::url($this->image_path);
+    }
+
+    public function GetDateDiffAttribute()
+    {
+        return Carbon::parse($this->created_at)->diffForHumans(now());
+    }
+
+
 }

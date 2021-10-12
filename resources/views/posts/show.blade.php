@@ -1,38 +1,55 @@
 <x-app-layout>
     <div class="container lg:w-3/4 md:w-4/5 w-11/12 mx-auto my-8 px-8 py-4 bg-white shadow-md">
 
-        @if (session('notice'))
-        <div class="bg-blue-100 border-blue-500 text-blue-700 border-l-4 p-4 my-2">
-            {{ session('notice') }}
-        </div>
-        @endif
+        <x-flash-message :message="session('notice')" />
+
+        <x-validation-errors :messages='$errors' />
 
         <article class="mb-2">
-            <h2 class="font-bold font-sans break-normal text-gray-900 pt-6 pb-1 text-3xl md:text-4xl">{{ $post->title }}
-            </h2>
+            <h2 class="font-bold font-sans break-normal text-gray-900 pt-6 pb-1 text-3xl md:text-4xl">
+                {{ $post->title }}</h2>
             <h3>{{ $post->user->name }}</h3>
             <p class="text-sm mb-2 md:text-base font-normal text-gray-600">
-                <span
-                    class="text-red-400 font-bold">{{ date('Y-m-d H:i:s', strtotime('-1 day')) < $post->created_at ? 'NEW' : '' }}</span>
+                記事作成日:
+                {{ $post->date_diff }}
+            </p>
+            <p class="text-sm mb-2 md:text-base font-normal text-gray-600">
+                記事作成日:
                 {{ $post->created_at }}
             </p>
-            <img src="{{ $post->image_url }}" alt="イメージ画像" class="mb-4">
-            <p class="text-gray-700 text-base">{!! nl2br(e($post->body)) !!}</p>
-
-        </article>
-        <div class="flex flex-row text-center my-4">
-            @can('update', $post)
-            <a href="{{ route('posts.edit', $post) }}"
-                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-20 mr-2">編集</a>
-            @endcan
-            @can('delete', $post)
-            <form action="{{ route('posts.destroy', $post) }}" method="post">
+            <img src="{{ $post->image_url }}" alt="" class="mb-4 mx-auto">
+            <p class="text-gray-700 text-base break-words">{!! nl2br(e($post->body)) !!}</p>
+            
+            @auth
+            @if (!empty($like))
+            <form action="{{ route('posts.likes.destroy', [$post, $like]) }}" method="POST" class="mt-2">
                 @csrf
                 @method('DELETE')
-                <input type="submit" value="削除" onclick="if(!confirm('削除しますか？')){return false};"
-                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-20">
+                <x-action-button type="submit" color="pink" text="お気に入り削除" />
             </form>
-            @endcan
-        </div>
+            @else
+            <form action="{{ route('posts.likes.store', $post) }}" method="POST" class="mt-2">
+                @csrf
+                <x-action-button type="submit" color="blue" text="お気に入り" />
+            </form>
+            @endif
+            @endauth
+            <p class="font-bold">お気に入り数：{{ $post->likes->count() }}</p>
+
+            <div class="flex flex-row text-center my-4">
+                @can('update', $post)
+                <x-action-button type="button" onclick="location.href='{{ route('posts.edit', $post) }}'" color="green"
+                    text="編集" class="w-20" />
+                @endcan
+                @can('delete', $post)
+                <form action="{{ route('posts.destroy', $post) }}" method="post">
+                    @csrf
+                    @method('DELETE')
+                    <x-action-button type="submit" onclick="if(!confirm('本当に削除しますか？')){return false}" color="red"
+                        text="削除" class="w-20" />
+                </form>
+                @endcan
+            </div>
+        </article>
     </div>
 </x-app-layout>
